@@ -1,8 +1,0 @@
-/* 마이크와 카메라 버튼 아이콘 색상 개별 지정 */
-.lk-control-bar .lk-button-group .lk-track-toggle[data-source="microphone"] {
-  color: #ff8339;
-}
-
-.lk-control-bar .lk-button-group .lk-track-toggle[data-source="camera"] {
-  color: #ff8339;
-}
