@@ -16,12 +16,8 @@ const serverUrl = "wss://dawata-3r907ysh.livekit.cloud";
 
 declare global {
   interface Window {
-    // 주입될 데이터의 타입을 정의합니다
-    injectedJavaScript?: {
-      jwt?: string;
-      appointmentId?: number;
-      // 필요한 다른 필드들을 여기에 추가
-    };
+    jwt?: string;
+    appointmentId?: string;
   }
 }
 
@@ -29,24 +25,34 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [room, setRoom] = useState("");
-  const [injectedJavaScript, setInjectedJavaScript] = useState<
-    Window["injectedJavaScript"] | null
-  >(null);
+  const [injectedData, setInjectedData] = useState({
+    jwt: "",
+    appointmentId: "",
+  });
 
   useEffect(() => {
-    // 주입된 데이터 확인
-    console.log("Window객체:", window);
-    console.log("주입된 데이터:", window.injectedJavaScript);
+    // 직접 window 객체에서 주입된 값 확인
+    console.log("JWT:", window.jwt);
+    console.log("AppointmentID:", window.appointmentId);
 
-    // 주입된 데이터가 있다면 state에 저장
-    if (window.injectedJavaScript) {
-      setInjectedJavaScript(window.injectedJavaScript);
-    }
+    // 초기 주입된 값 저장
+    setInjectedData({
+      jwt: window.jwt || "",
+      appointmentId: window.appointmentId || "",
+    });
 
-    // 데이터 주입 이벤트 리스너
+    // 메시지 이벤트 리스너
     const handleMessage = (event: MessageEvent) => {
-      console.log("메시지 이벤트 수신:", event.data);
-      setInjectedJavaScript(event.data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("받은 메시지:", data);
+        setInjectedData({
+          jwt: data.jwt || "",
+          appointmentId: data.appointmentId || "",
+        });
+      } catch (error) {
+        console.error("메시지 파싱 에러:", error);
+      }
     };
 
     window.addEventListener("message", handleMessage);
@@ -56,7 +62,7 @@ export default function App() {
     };
   }, []);
 
-  // 주입된 데이터 표시를 위한 디버그 영역 추가
+  // 디버그 정보 표시
   const renderDebugInfo = () => (
     <div
       style={{
@@ -69,8 +75,11 @@ export default function App() {
         zIndex: 9999,
       }}
     >
-      <h4>디버그 정보:</h4>
-      <pre>{JSON.stringify(injectedJavaScript, null, 2)}</pre>
+      <h4>네이티브 앱에서 받은 데이터:</h4>
+      <pre>
+        JWT: {injectedData.jwt}
+        AppointmentID: {injectedData.appointmentId}
+      </pre>
     </div>
   );
 
